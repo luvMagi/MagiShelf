@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu, globalShortcut } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerShelfIpc } from './ipc/shelfIpc'
@@ -10,8 +10,16 @@ import { registerThemeIpc } from './ipc/themeIpc'
 import { registerImportExportIpc } from './ipc/importExportIpc'
 
 const enableDefaultDebugMode = process.env['MAGISHELF_DEBUG'] === '1'
+let isQuitting = false
 
-function createWindow(): void {
+function getTrayIconPath(): string {
+  if (is.dev) {
+    return join(app.getAppPath(), 'image/magishelf_icon_256x256.ico')
+  }
+  return join(process.resourcesPath, 'image/magishelf_icon_256x256.ico')
+}
+
+function createWindow(): BrowserWindow {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 800,
@@ -34,6 +42,14 @@ function createWindow(): void {
     mainWindow.show()
   })
 
+  // Hide to tray instead of closing
+  mainWindow.on('close', (e) => {
+    if (!isQuitting) {
+      e.preventDefault()
+      mainWindow.hide()
+    }
+  })
+
   mainWindow.webContents.setWindowOpenHandler((details) => {
     shell.openExternal(details.url)
     return { action: 'deny' }
@@ -48,6 +64,8 @@ function createWindow(): void {
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
   }
+
+  return mainWindow
 }
 
 app.whenReady().then(() => {
@@ -69,18 +87,63 @@ app.whenReady().then(() => {
     BrowserWindow.fromWebContents(event.sender)?.minimize()
   })
   ipcMain.on('window:close', (event) => {
-    BrowserWindow.fromWebContents(event.sender)?.close()
+    BrowserWindow.fromWebContents(event.sender)?.hide()
   })
 
-  createWindow()
+  const mainWindow = createWindow()
+
+  // System tray
+  const tray = new Tray(getTrayIconPath())
+  tray.setToolTip('MagiShelf')
+  tray.setContextMenu(
+    Menu.buildFromTemplate([
+      {
+        label: 'Show MagiShelf',
+        click: () => {
+          mainWindow.show()
+          mainWindow.focus()
+        }
+      },
+      { type: 'separator' },
+      {
+        label: 'Quit',
+        click: () => {
+          isQuitting = true
+          app.quit()
+        }
+      }
+    ])
+  )
+  tray.on('double-click', () => {
+    mainWindow.show()
+    mainWindow.focus()
+  })
+
+  // Global hotkey Ctrl+` to toggle visibility
+  globalShortcut.register('Ctrl+`', () => {
+    if (mainWindow.isVisible() && mainWindow.isFocused()) {
+      mainWindow.hide()
+    } else {
+      mainWindow.show()
+      mainWindow.focus()
+    }
+  })
+
+  app.on('before-quit', () => {
+    isQuitting = true
+  })
+
+  app.on('will-quit', () => {
+    globalShortcut.unregisterAll()
+  })
 
   app.on('activate', function () {
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
+    mainWindow.show()
+    mainWindow.focus()
   })
 })
 
+// Keep running in tray when all windows are closed
 app.on('window-all-closed', () => {
-  if (process.platform !== 'darwin') {
-    app.quit()
-  }
+  // intentionally empty — app lives in tray
 })

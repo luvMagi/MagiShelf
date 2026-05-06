@@ -128,17 +128,74 @@ Drawers do not have a traditional "Save" button.
 ## 8. Development Commands
 
 ```bash
-npm install
-npm run dev
-npm run typecheck
-npm run build
-npm run preview
+npm install        # install dependencies
+npm run dev        # start dev server (renderer hot-reload + main process)
+npm run typecheck  # TypeScript type check only, no emit
+npm run build      # compile to out/
+npm run preview    # preview the compiled build
 ```
 
 ### Debug Mode
 To enable DevTools on startup:
 - **PowerShell**: `$env:MAGISHELF_DEBUG='1'; npm run dev`
 - **CMD**: `set MAGISHELF_DEBUG=1 && npm run dev`
+
+---
+
+## 8a. Packaging & Distribution
+
+### Prerequisites
+- Node.js + npm installed
+- No code-signing certificate needed (configured to skip signing)
+
+### Portable / Green Version (no installer, single folder)
+
+```bash
+npm run dist:dir
+```
+
+Output: `dist/win-unpacked/MagiShelf.exe`
+
+- No installation required — copy the entire `win-unpacked/` folder anywhere and run `MagiShelf.exe` directly.
+- No config files to prepare — all user data is stored in `%APPDATA%/MagiShelf/` (Electron's userData directory), not next to the executable. The app creates it automatically on first launch.
+
+### Installer Version (NSIS setup wizard)
+
+```bash
+npm run dist
+```
+
+Output: `dist/MagiShelf Setup x.x.x.exe`
+
+- Installs to `C:\Program Files\MagiShelf\` by default (user can change during setup).
+- Creates Start Menu and Desktop shortcuts.
+- Uninstaller is included.
+- User data is in `%APPDATA%/MagiShelf/` — uninstalling the app does **not** delete user data.
+
+### User Data Location
+
+All workspaces, themes, icons, and settings are stored in:
+
+```
+%APPDATA%/MagiShelf/
+├── config.json              ← workspace registry (active workspace, recent list)
+└── workspaces/
+    └── <slug>-<id>/
+        ├── store.json       ← shelves, books, entries, tags, app settings
+        ├── themes.json      ← custom themes
+        └── icons/           ← imported icon images
+```
+
+You can back up or migrate all data by copying the `%APPDATA%/MagiShelf/` folder.
+
+### Known Issue: Symlink Error on Windows (non-admin)
+
+If `npm run dist` fails with a symlink-related error from `winCodeSign`, it means Windows requires Developer Mode or admin privileges to create symlinks.
+
+**Workarounds:**
+1. Run the terminal as Administrator and retry.
+2. Enable Windows Developer Mode: Settings → System → For developers → Developer Mode.
+3. Use `dist:dir` (portable version) instead, which does not trigger the signing step.
 
 ---
 
@@ -171,7 +228,7 @@ MagiShelf is a **desktop launcher** with **profile-isolated local workspaces**, 
 - `run-command` is Windows/PowerShell-biased.
 - No built-in JSON editor for themes (manual edit + reload).
 - No multi-instance conflict management for the same workspace.
-- No distribution pipeline configured yet.
+- Packaging uses electron-builder (NSIS installer + portable dir). See section 8a.
 
 ---
 

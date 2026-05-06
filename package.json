@@ -23,11 +23,14 @@
     "files": [
       "out/**/*"
     ],
+    "extraResources": [
+      { "from": "image", "to": "image" }
+    ],
     "win": {
       "target": [
         { "target": "nsis", "arch": ["x64"] }
       ],
-      "icon": "build/icon.ico"
+      "icon": "image/magishelf_icon_256x256.ico"
     },
     "nsis": {
       "oneClick": false,
