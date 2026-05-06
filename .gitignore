@@ -1,0 +1,24 @@
+# Build artifacts
+/dist/
+/out/
+
+# Dependencies
+/node_modules/
+
+# IDE / Editor
+/.idea/
+/.vscode/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Project specific
+/chat/
+/.claude/
+/npm-debug.log*
+/yarn-debug.log*
+/yarn-error.log*
+/.eslintcache
