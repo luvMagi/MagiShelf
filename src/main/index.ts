@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain, Tray, Menu, globalShortcut } from 'electron'
+import { app, shell, BrowserWindow, ipcMain, Tray, Menu } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerShelfIpc } from './ipc/shelfIpc'
@@ -14,9 +14,16 @@ let isQuitting = false
 
 function getTrayIconPath(): string {
   if (is.dev) {
-    return join(app.getAppPath(), 'image/magishelf_icon_256x256.ico')
+    return join(app.getAppPath(), 'image/16x16.ico')
   }
-  return join(process.resourcesPath, 'image/magishelf_icon_256x256.ico')
+  return join(process.resourcesPath, 'image/16x16.ico')
+}
+
+function getWindowIconPath(): string {
+  if (is.dev) {
+    return join(app.getAppPath(), 'image/256x256.ico')
+  }
+  return join(process.resourcesPath, 'image/256x256.ico')
 }
 
 function createWindow(): BrowserWindow {
@@ -30,6 +37,7 @@ function createWindow(): BrowserWindow {
     titleBarStyle: 'hidden',
     backgroundColor: '#0f0f13',
     autoHideMenuBar: true,
+    icon: getWindowIconPath(),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
       sandbox: false,
@@ -119,25 +127,11 @@ app.whenReady().then(() => {
     mainWindow.focus()
   })
 
-  // Global hotkey Ctrl+` to toggle visibility
-  globalShortcut.register('Ctrl+`', () => {
-    if (mainWindow.isVisible() && mainWindow.isFocused()) {
-      mainWindow.hide()
-    } else {
-      mainWindow.show()
-      mainWindow.focus()
-    }
-  })
-
   app.on('before-quit', () => {
     isQuitting = true
   })
 
-  app.on('will-quit', () => {
-    globalShortcut.unregisterAll()
-  })
-
-  app.on('activate', function () {
+app.on('activate', function () {
     mainWindow.show()
     mainWindow.focus()
   })

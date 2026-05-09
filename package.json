@@ -30,7 +30,7 @@
       "target": [
         { "target": "nsis", "arch": ["x64"] }
       ],
-      "icon": "image/magishelf_icon_256x256.ico"
+      "icon": "image/256x256.ico"
     },
     "nsis": {
       "oneClick": false,
