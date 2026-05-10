@@ -9,11 +9,18 @@ type ThemeFileData = {
 }
 
 const themeColorKeys = Object.keys(defaultThemeDefinitions[0].colors) as Array<keyof ThemeColors>
-const legacyBuiltinLightTextColors = {
-  textSecondary: 'rgba(15, 23, 42, 0.78)',
-  textMuted: 'rgba(15, 23, 42, 0.56)',
-  textFaint: 'rgba(15, 23, 42, 0.36)'
-} satisfies Partial<ThemeColors>
+const legacyBuiltinLightTextColorSets: Array<Partial<ThemeColors>> = [
+  {
+    textSecondary: 'rgba(15, 23, 42, 0.78)',
+    textMuted: 'rgba(15, 23, 42, 0.56)',
+    textFaint: 'rgba(15, 23, 42, 0.36)'
+  },
+  {
+    textSecondary: 'rgba(15, 23, 42, 0.88)',
+    textMuted: 'rgba(15, 23, 42, 0.72)',
+    textFaint: 'rgba(15, 23, 42, 0.58)'
+  }
+]
 
 export async function initializeWorkspaceThemes(workspacePath: string): Promise<void> {
   const filePath = getWorkspaceThemeFilePath(workspacePath)
@@ -87,11 +94,14 @@ function normalizeThemes(themes: ThemeDefinition[] | undefined): ThemeDefinition
 function upgradeLegacyBuiltinTheme(theme: ThemeDefinition | null): ThemeDefinition | null {
   if (!theme || theme.id !== 'light') return theme
 
-  if (
-    theme.colors.textSecondary === legacyBuiltinLightTextColors.textSecondary &&
-    theme.colors.textMuted === legacyBuiltinLightTextColors.textMuted &&
-    theme.colors.textFaint === legacyBuiltinLightTextColors.textFaint
-  ) {
+  const isLegacy = legacyBuiltinLightTextColorSets.some(
+    (set) =>
+      theme.colors.textSecondary === set.textSecondary &&
+      theme.colors.textMuted === set.textMuted &&
+      theme.colors.textFaint === set.textFaint
+  )
+
+  if (isLegacy) {
     const latestLightTheme = defaultThemeDefinitions.find((item) => item.id === 'light')
     if (!latestLightTheme) return theme
 

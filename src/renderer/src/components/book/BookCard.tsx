@@ -88,7 +88,7 @@ export function BookCard({ book, onClick, onEdit, onDelete }: Props) {
             )
           })}
         </div>
-        <span className="text-xs theme-text-faint flex-shrink-0">{entryCount} entries</span>
+        <span className="text-xs font-medium theme-text-faint flex-shrink-0">{entryCount} entries</span>
       </div>
     </motion.div>
   )

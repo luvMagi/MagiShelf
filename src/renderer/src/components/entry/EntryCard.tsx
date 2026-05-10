@@ -161,8 +161,8 @@ export function EntryCard({
             {ACTION_LABELS[entry.actionType]}
           </span>
         </div>
-        {entry.description && <p className="text-xs theme-text-muted mt-0.5 truncate">{entry.description}</p>}
-        {hint && <p className="text-xs font-mono theme-text-muted mt-0.5 truncate">{hint}</p>}
+        {entry.description && <p className="text-xs font-medium theme-text-muted mt-0.5 truncate">{entry.description}</p>}
+        {hint && <p className="text-[11px] font-medium font-mono theme-text-muted mt-0.5 truncate">{hint}</p>}
         {error && <p className="text-xs theme-danger-text mt-1 truncate">{error}</p>}
       </div>
 
